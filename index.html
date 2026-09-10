@@ -26,6 +26,38 @@
             --font-sans: 'Outfit', sans-serif;
         }
 
+        /* Mode Gelap (Dark Mode) */
+        [data-theme="dark"] {
+            --cream-50: #121410;
+            --cream-100: #1a1d17;
+            --cream-200: #252a21;
+            --sage-50: #1f231c;
+            --sage-100: #2d3328;
+            --sage-200: #4a5441;
+            --sage-300: #667458;
+            --sage-500: #8ba077;
+            --sage-700: #d4dec9;
+            --sage-900: #f0f4ea;
+        }
+
+        [data-theme="dark"] .bg-white,
+        [data-theme="dark"] .project-card,
+        [data-theme="dark"] .hobby-card,
+        [data-theme="dark"] .dash-card,
+        [data-theme="dark"] .login-box,
+        [data-theme="dark"] .admin-sidebar,
+        [data-theme="dark"] .admin-topbar,
+        [data-theme="dark"] .admin-item,
+        [data-theme="dark"] .mobile-menu {
+            background-color: var(--cream-50) !important;
+            color: var(--sage-900);
+        }
+        [data-theme="dark"] .form-input {
+            background-color: var(--cream-100);
+            color: var(--sage-900);
+            border-color: var(--sage-200);
+        }
+
         /* Reset Dasar */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -71,26 +103,41 @@
         .desktop-menu a { color: var(--sage-700); font-weight: 500; transition: color 0.2s; }
         .desktop-menu a:hover { color: var(--sage-500); }
         
-        .menu-btn { display: block; color: var(--sage-700); padding: 5px; }
+        .hamburger-btn { display: flex; flex-direction: column; gap: 6px; width: 30px; cursor: pointer; z-index: 1001; position: relative; padding: 5px; }
+        .hamburger-btn .bar { width: 100%; height: 3px; background-color: var(--sage-700); border-radius: 3px; transition: all 0.3s ease-in-out; }
+        .hamburger-btn.active .bar:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .hamburger-btn.active .bar:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active .bar:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+        [data-theme="dark"] .hamburger-btn .bar { background-color: var(--sage-900); }
         
         .mobile-menu {
-            position: absolute; top: 100%; left: 0; width: 100%;
-            background-color: var(--cream-50); border-bottom: 1px solid var(--sage-100);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-            max-height: 0; opacity: 0; overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.3s ease;
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 300px; height: 100vh;
+            background-color: var(--cream-50); box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex; flex-direction: column; padding: 100px 30px 40px; z-index: 999;
         }
-        .mobile-menu.open { max-height: 300px; opacity: 1; padding: 10px 20px 20px; }
+        .mobile-menu.open { right: 0; }
         .mobile-menu a {
-            display: block; padding: 12px; margin-bottom: 5px; text-align: center;
-            color: var(--sage-700); font-weight: 500; border-radius: 8px;
-            transition: background 0.2s;
+            display: block; font-size: 1.25rem; padding: 15px 0; margin-bottom: 5px; text-align: right;
+            color: var(--sage-700); font-weight: 500; border-bottom: 1px solid var(--sage-100);
+            transform: translateX(50px); opacity: 0; transition: all 0.4s ease;
         }
-        .mobile-menu a:hover { background-color: var(--sage-100); }
+        .mobile-menu.open a { transform: translateX(0); opacity: 1; }
+        .mobile-menu.open a:nth-child(1) { transition-delay: 0.1s; }
+        .mobile-menu.open a:nth-child(2) { transition-delay: 0.2s; }
+        .mobile-menu.open a:nth-child(3) { transition-delay: 0.3s; }
+        .mobile-menu.open a:nth-child(4) { transition-delay: 0.4s; }
+        .mobile-menu a:hover { color: var(--sage-500); padding-right: 10px; }
+
+        .menu-backdrop {
+            position: fixed; inset: 0; background: rgba(58,66,45,0.4); backdrop-filter: blur(4px);
+            z-index: 998; opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        .menu-backdrop.open { opacity: 1; visibility: visible; }
 
         @media (min-width: 768px) {
             .desktop-menu { display: flex; }
-            .menu-btn { display: none; }
+            .hamburger-btn { display: none; }
         }
 
         .hero {
@@ -147,13 +194,15 @@
         .section-desc { color: var(--sage-700); }
 
         /* Grid Portofolio */
-        .projects-wrapper { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+        .projects-wrapper { max-width: 1024px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media (min-width: 768px) { .projects-wrapper { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .projects-wrapper { grid-template-columns: repeat(3, 1fr); } }
         .project-card {
             background: white; border-radius: 24px; overflow: hidden; border: 1px solid var(--sage-100);
-            transition: all 0.3s ease; display: block;
+            transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;
         }
         .project-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: var(--sage-300); }
-        .project-img-box { position: relative; height: 250px; overflow: hidden; background-color: var(--sage-100); }
+        .project-img-box { position: relative; height: 200px; overflow: hidden; background-color: var(--sage-100); flex-shrink: 0; }
         .project-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s; }
         .project-card:hover .project-img-box img { transform: scale(1.05); }
         .project-icon {
@@ -162,13 +211,13 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s;
         }
         .project-card:hover .project-icon { transform: rotate(-10deg); }
-        .project-info { padding: 30px; }
-        .project-info h3 { font-size: 1.5rem; margin-bottom: 12px; transition: color 0.3s; }
+        .project-info { padding: 30px; display: flex; flex-direction: column; flex: 1; }
+        .project-info h3 { font-size: 1.25rem; margin-bottom: 12px; transition: color 0.3s; }
         .project-card:hover .project-info h3 { color: var(--sage-700); }
-        .project-info p { color: var(--sage-700); margin-bottom: 25px; }
+        .project-info p { color: var(--sage-700); margin-bottom: 25px; flex: 1; font-size: 0.95rem; }
         .project-link-btn {
             display: inline-flex; align-items: center; gap: 8px; font-size: 0.875rem; font-weight: 700;
-            color: var(--sage-500); background: var(--sage-50); padding: 10px 20px;
+            color: var(--sage-500); background: var(--sage-50); padding: 10px 20px; align-self: flex-start;
             border-radius: 50px; border: 1px solid transparent; transition: all 0.3s;
         }
         .project-card:hover .project-link-btn { background: var(--sage-100); color: var(--sage-700); border-color: var(--sage-200); }
@@ -223,6 +272,20 @@
             100% { width: 70px; height: 70px; opacity: 0; }
         }
 
+        /* Tab Layout & Setelan Khusus Admin */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInTab 0.3s ease; }
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--sage-200); transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+        input:checked + .slider { background-color: var(--sage-500); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+
         /* Admin UI Modal (Login) */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(58,66,45,0.6); backdrop-filter: blur(5px);
@@ -245,25 +308,62 @@
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .btn-group .btn { flex: 1; padding: 12px; font-size: 0.95rem; }
 
-        /* Admin Dashboard CMS */
-        .dashboard-overlay {
-            position: fixed; inset: 0; background: var(--cream-100); z-index: 2000;
-            display: none; overflow-y: auto; padding-bottom: 60px;
+        /* Admin Dashboard CMS Full Page */
+        .admin-layout {
+            position: fixed; inset: 0; background: var(--cream-100); z-index: 3000;
+            display: none; flex-direction: row; height: 100vh; overflow: hidden;
         }
-        .dashboard-overlay.active { display: block; }
-        .dash-header {
-            position: sticky; top: 0; background: white; padding: 15px 20px;
-            border-bottom: 1px solid var(--sage-100); z-index: 10; margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        .admin-layout.active { display: flex; }
+        
+        .admin-sidebar {
+            width: 260px; max-width: 85vw; background: white; border-right: 1px solid var(--sage-100);
+            display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed; top: 0; left: 0; bottom: 0; height: 100vh; z-index: 3010; transform: translateX(-100%);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
         }
-        .dash-header-inner { max-width: 1024px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .dash-header h2 { font-size: 1.25rem; }
-        .btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 20px; border-radius: 50px; font-size: 0.875rem; font-weight: 500; }
+        .admin-sidebar.open { transform: translateX(0); }
+        @media (min-width: 768px) {
+            .admin-sidebar { position: static; transform: none; height: 100%; box-shadow: none; max-width: 260px; }
+        }
         
-        .dash-grid { display: grid; grid-template-columns: 1fr; gap: 30px; max-width: 1024px; margin: 0 auto; padding: 0 20px; }
-        @media (min-width: 768px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--sage-100); }
+        .sidebar-header h2 { font-size: 1.25rem; color: var(--sage-900); }
+        .sidebar-nav { flex: 1; padding: 15px 0; overflow-y: auto; overflow-x: hidden; }
+        .sidebar-nav a { 
+            display: block; padding: 12px 20px; color: var(--sage-700); 
+            font-weight: 500; transition: all 0.2s; border-left: 4px solid transparent;
+            margin-bottom: 4px; width: 100%; word-break: break-word;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active { 
+            background: var(--sage-50); color: var(--sage-900); border-left-color: var(--sage-500);
+        }
+
+        .admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; position: relative; }
+        .admin-topbar { 
+            background: white; border-bottom: 1px solid var(--sage-100); 
+            padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; 
+            z-index: 3001; position: relative;
+        }
+        .admin-topbar-left { display: flex; align-items: center; gap: 15px; }
+        .admin-topbar h2 { font-size: 1.125rem; font-weight: 600; margin: 0; }
         
-        .dash-card { background: white; padding: 25px; border-radius: 24px; border: 1px solid var(--sage-100); }
+        .btn-close-cms { display: block; color: var(--sage-700); padding: 5px; transition: color 0.2s; }
+        .btn-close-cms:hover { color: #dc2626; }
+
+        .admin-menu-btn { display: block; background: none; border: none; color: var(--sage-900); cursor: pointer; padding: 5px; }
+        @media (min-width: 768px) { .admin-menu-btn { display: none; } }
+
+        .admin-content { flex: 1; overflow-y: auto; padding: 30px 20px; }
+        .admin-backdrop {
+            position: fixed; inset: 0; background: rgba(58,66,45,0.6); backdrop-filter: blur(2px);
+            z-index: 3005; display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .admin-backdrop.active { display: block; opacity: 1; }
+        @media (min-width: 768px) { .admin-backdrop { display: none !important; } }
+        
+        .dash-tabs-container { max-width: 1000px; margin: 0 auto; }
+        
+        .dash-card { background: white; padding: 25px; border-radius: 24px; border: 1px solid var(--sage-100); scroll-margin-top: 20px;}
         .dash-card h3 { font-size: 1.25rem; margin-bottom: 20px; }
         .form-section { background: var(--cream-50); padding: 20px; border-radius: 16px; border: 1px solid var(--sage-100); margin-bottom: 25px; }
         .form-section h4 { font-size: 0.875rem; margin-bottom: 15px; color: var(--sage-700); }
@@ -291,30 +391,32 @@
     <nav id="navbar">
         <div class="container flex justify-between items-center">
             <!-- Logo -->
-            <a href="#" class="logo">Halo, <span>Sandra Clarita.</span></a>
+            <a href="#" class="logo">Halo, <span class="dynamic-name">Sandra Clarita.</span></a>
             
             <!-- Desktop Menu -->
             <div class="desktop-menu">
-                <a href="#about">Tentang</a>
-                <a href="#projects">Portofolio</a>
-                <a href="#hobbies">Hobi</a>
-                <a href="#contact">Kontak</a>
+                <a href="#about" data-i18n="navAbout">Tentang</a>
+                <a href="#projects" data-i18n="navPorto">Portofolio</a>
+                <a href="#hobbies" data-i18n="navHobby">Hobi</a>
+                <a href="#contact" data-i18n="navContact">Kontak</a>
             </div>
 
-            <!-- Mobile Menu Toggle -->
-            <button id="menu-btn" class="menu-btn" aria-label="Toggle Menu">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
+            <button id="menu-btn" class="hamburger-btn" aria-label="Toggle Menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
             </button>
         </div>
 
-        <!-- Mobile Menu Dropdown -->
+        <!-- Menu Backdrop -->
+        <div id="menu-backdrop" class="menu-backdrop"></div>
+
+        <!-- Mobile Menu Sidebar -->
         <div id="mobile-menu" class="mobile-menu">
-            <a href="#about" class="mobile-link">Tentang</a>
-            <a href="#projects" class="mobile-link">Portofolio</a>
-            <a href="#hobbies" class="mobile-link">Hobi</a>
-            <a href="#contact" class="mobile-link">Kontak</a>
+            <a href="#about" class="mobile-link" data-i18n="navAbout">Tentang</a>
+            <a href="#projects" class="mobile-link" data-i18n="navPorto">Portofolio</a>
+            <a href="#hobbies" class="mobile-link" data-i18n="navHobby">Hobi</a>
+            <a href="#contact" class="mobile-link" data-i18n="navContact">Kontak</a>
         </div>
     </nav>
 
@@ -323,11 +425,11 @@
             <div class="greeting-badge">
                 👋 <span id="dynamic-greeting">Selamat Datang</span>
             </div>
-            <h1 class="hero-title">Saya <span>Sandra Clarita.</span></h1>
-            <p class="hero-desc">Aku suka mencoba hal-hal yang baru. senang bertemu dengan anda!</p>
+            <h1 class="hero-title"><span data-i18n="heroIm">Saya</span> <span class="dynamic-name">Sandra Clarita.</span></h1>
+            <p class="hero-desc" data-i18n="heroDesc">Aku suka mencoba hal-hal yang baru. senang bertemu dengan anda!</p>
             <div class="hero-buttons">
-                <a href="#contact" class="btn btn-primary">Mari Berdiskusi</a>
-                <a href="#projects" class="btn btn-secondary">Lihat Portofolio</a>
+                <a href="#contact" class="btn btn-primary" data-i18n="btnDiscuss">Mari Berdiskusi</a>
+                <a href="#projects" class="btn btn-secondary" data-i18n="btnPorto">Lihat Portofolio</a>
             </div>
         </div>
 
@@ -344,8 +446,8 @@
     <section id="projects" class="section bg-white">
         <div class="container">
             <div class="section-header fade-in-up">
-                <h2 class="section-title">Portofolio</h2>
-                <p class="section-desc">Beberapa karya dan eksplorasi terbaru saya.</p>
+                <h2 class="section-title" data-i18n="secPorto">Portofolio</h2>
+                <p class="section-desc" data-i18n="secPortoDesc">Beberapa karya dan eksplorasi terbaru saya.</p>
             </div>
             <!-- Data diinjeksi via JS -->
             <div id="projects-container" class="projects-wrapper"></div>
@@ -355,8 +457,8 @@
     <section id="hobbies" class="section">
         <div class="container">
             <div class="section-header fade-in-up">
-                <h2 class="section-title">Hobi & Minat</h2>
-                <p class="section-desc">Aktivitas yang menginspirasi kreativitas saya sehari-hari.</p>
+                <h2 class="section-title" data-i18n="secHobby">Hobi & Minat</h2>
+                <p class="section-desc" data-i18n="secHobbyDesc">Aktivitas yang menginspirasi kreativitas saya sehari-hari.</p>
             </div>
             <!-- Data diinjeksi via JS -->
             <div id="hobbies-container" class="hobbies-grid"></div>
@@ -366,98 +468,180 @@
     <section id="contact" class="section contact-section">
         <div class="container">
             <div class="contact-content fade-in-up">
-                <h2 class="contact-title">Tertarik Bekerja Sama?</h2>
-                <p class="contact-desc">Jangan ragu untuk menyapa. Saya selalu terbuka untuk mendiskusikan proyek baru atau sekadar bertukar ide kreatif.</p>
-                <a href="mailto:hello@example.com" class="btn btn-dark">
-                    Kirim Pesan
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                </a>
+                <h2 class="contact-title" data-i18n="secContact">Tertarik Bekerja Sama?</h2>
+                <p class="contact-desc" data-i18n="secContactDesc">Jangan ragu untuk menyapa. Saya selalu terbuka untuk mendiskusikan proyek baru atau sekadar bertukar ide kreatif.</p>
+                <a href="mailto:hello@example.com" class="btn btn-dark" data-i18n="btnMsg">Kirim Pesan</a>
             </div>
         </div>
     </section>
 
+    <!-- Footer -->
     <footer>
-        <div class="container fade-in-up">
+        <div class="container">
             <div class="social-links">
-                <a href="#"><svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
-                <a href="#"><svg viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
-                <a href="#"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+                <a href="https://instagram.com/sandraclarita" target="_blank" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="year"></span> Desain Mobile-First (Pure HTML CSS JS).</p>
-                <button id="open-login-btn" class="admin-trigger" title="Admin CMS">
-                    <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+                <span>&copy; <span id="year"></span> <span class="dynamic-name">Sandra Clarita.</span></span>
+                <button id="open-login-btn" class="admin-trigger" aria-label="Admin Login">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm-1 5h8v8H8v-8z"/></svg>
                 </button>
             </div>
         </div>
     </footer>
 
-    <!-- Modal Login -->
     <div id="admin-login-modal" class="modal-overlay">
-        <div class="login-box">
-            <h2>Admin Login</h2>
-            <p>Akses khusus untuk mengelola konten.</p>
-            <input type="text" id="admin-user" placeholder="Username" class="form-input">
-            <input type="password" id="admin-pass" placeholder="Password" class="form-input">
-            <p id="login-error" class="error-text">Kredensial tidak valid!</p>
-            <div class="btn-group">
-                <button id="btn-login-submit" class="btn btn-primary">Masuk</button>
-                <button id="btn-login-close" class="btn btn-secondary">Batal</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal CMS Dashboard -->
-    <div id="admin-dashboard" class="dashboard-overlay">
-        <div class="dash-header">
-            <div class="dash-header-inner">
-                <h2>CMS Dashboard 🛠️</h2>
-                <button id="btn-logout" class="btn-danger">Tutup & Keluar</button>
+            <div class="login-box">
+                <h2>Admin Login</h2>
+                <p>Akses khusus untuk mengelola konten.</p>
+                <input type="text" id="admin-user" placeholder="Username" class="form-input">
+                <input type="password" id="admin-pass" placeholder="Password" class="form-input">
+                <p id="login-error" class="error-text">Kredensial tidak valid!</p>
+                <div class="btn-group">
+                    <button id="btn-login-submit" class="btn btn-primary">Masuk</button>
+                    <button id="btn-login-close" class="btn btn-secondary">Batal</button>
+                </div>
             </div>
         </div>
 
-        <div class="dash-grid">
-            <!-- Panel Portofolio -->
-            <div class="dash-card">
-                <h3>Daftar Portofolio</h3>
-                <div class="form-section">
-                    <h4>Tambah Portofolio Baru</h4>
-                    <input type="text" id="p-title" placeholder="Nama Portofolio" class="form-input">
-                    <textarea id="p-desc" placeholder="Deskripsi Singkat" class="form-input"></textarea>
-                    <input type="text" id="p-image" placeholder="URL Foto (opsional)" class="form-input">
-                    <div class="form-row">
-                        <input type="text" id="p-link" placeholder="URL Link (opsional)" class="form-input" style="flex:1">
-                        <input type="text" id="p-icon" placeholder="Emoji (cth: 📓)" class="form-input" style="width:100px; text-align:center;">
+        <!-- Modal CMS Dashboard Full Page -->
+        <div id="admin-dashboard" class="admin-layout">
+            <!-- Sidebar -->
+            <aside id="admin-sidebar" class="admin-sidebar">
+                <div class="sidebar-header">
+                    <h2>Admin Panel 🛠️</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#panel-portofolio" class="admin-nav-link active" data-tab="panel-portofolio">Portofolio</a>
+                    <a href="#panel-hobi" class="admin-nav-link" data-tab="panel-hobi">Hobi</a>
+                    <a href="#panel-pengaturan" class="admin-nav-link" data-tab="panel-pengaturan">Pengaturan</a>
+                </nav>
+            </aside>
+
+            <!-- Backdrop for Mobile -->
+            <div id="admin-backdrop" class="admin-backdrop"></div>
+
+            <!-- Main Content -->
+            <div class="admin-main">
+                <header class="admin-topbar">
+                    <div class="admin-topbar-left">
+                        <button id="admin-menu-btn" class="admin-menu-btn" aria-label="Toggle Admin Menu">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <h2>Dashboard Content</h2>
                     </div>
-                    <p id="p-error" class="error-text">Judul dan deskripsi wajib diisi.</p>
-                    <div class="btn-group">
-                        <button id="btn-add-p" class="btn btn-primary" style="padding: 10px;">Simpan Portofolio</button>
-                        <button id="btn-cancel-p" class="btn btn-secondary hidden" style="padding: 10px;">Batal</button>
+                    
+                    <!-- Tombol Keluar CMS -->
+                    <button id="btn-close-cms" class="btn-close-cms" aria-label="Tutup CMS">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </header>
+                
+                <div class="admin-content" id="admin-content-area">
+                    <div class="dash-tabs-container">
+                        <!-- Panel Portofolio -->
+                        <div id="panel-portofolio" class="dash-card tab-content active">
+                            <h3>Daftar Portofolio</h3>
+                            <div class="form-section">
+                                <h4>Tambah Portofolio Baru</h4>
+                                <input type="text" id="p-title" placeholder="Nama Portofolio" class="form-input">
+                                <textarea id="p-desc" placeholder="Deskripsi Singkat" class="form-input"></textarea>
+                                <input type="text" id="p-image" placeholder="URL Foto (opsional)" class="form-input">
+                                <div class="form-row">
+                                    <input type="text" id="p-link" placeholder="URL Link (opsional)" class="form-input" style="flex:1">
+                                    <input type="text" id="p-icon" placeholder="Emoji (cth: 📓)" class="form-input" style="width:100px; text-align:center;">
+                                </div>
+                                <p id="p-error" class="error-text">Judul dan deskripsi wajib diisi.</p>
+                                <div class="btn-group">
+                                    <button id="btn-add-p" class="btn btn-primary" style="padding: 10px;">Simpan Portofolio</button>
+                                    <button id="btn-cancel-p" class="btn btn-secondary hidden" style="padding: 10px;">Batal</button>
+                                </div>
+                            </div>
+                            <div id="admin-projects-list" class="admin-list"></div>
+                        </div>
+
+                        <!-- Panel Hobi -->
+                        <div id="panel-hobi" class="dash-card tab-content">
+                            <h3>Daftar Hobi</h3>
+                            <div class="form-section">
+                                <h4>Tambah Hobi Baru</h4>
+                                <input type="text" id="h-title" placeholder="Nama Hobi" class="form-input">
+                                <textarea id="h-desc" placeholder="Deskripsi Singkat" class="form-input"></textarea>
+                                <input type="text" id="h-icon" placeholder="Emoji Ikon (cth: 🏃‍♀️)" class="form-input">
+                                <p id="h-error" class="error-text">Semua kolom wajib diisi.</p>
+                                <div class="btn-group">
+                                    <button id="btn-add-h" class="btn btn-primary" style="padding: 10px;">Simpan Hobi</button>
+                                    <button id="btn-cancel-h" class="btn btn-secondary hidden" style="padding: 10px;">Batal</button>
+                                </div>
+                            </div>
+                            <div id="admin-hobbies-list" class="admin-list"></div>
+                        </div>
+                        
+                        <!-- Panel Pengaturan -->
+                        <div id="panel-pengaturan" class="dash-card tab-content">
+                            <h3>Pengaturan Sistem</h3>
+                            
+                            <div class="form-section">
+                                <h4>Tampilan</h4>
+                                <div class="form-row items-center justify-between" style="padding: 10px 0;">
+                                    <span style="font-weight:500; color:var(--sage-900);">Mode Gelap (Dark Mode)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-theme-toggle">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h4>Bahasa (Language)</h4>
+                                <select id="setting-lang-select" class="form-input" style="cursor: pointer;">
+                                    <option value="id">Bahasa Indonesia</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+
+                            <div class="form-section">
+                                <h4>Profil Personal</h4>
+                                <input type="text" id="setting-name-input" placeholder="Nama Tampilan Anda" class="form-input">
+                                <div class="btn-group" style="margin-top: 15px;">
+                                    <button id="btn-save-settings" class="btn btn-primary" style="padding: 10px;">Simpan Pengaturan</button>
+                                </div>
+                                <p id="settings-msg" style="color:var(--sage-500); font-weight: 500; font-size:0.875rem; margin-top:10px; display:none;">✅ Pengaturan berhasil disimpan!</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="admin-projects-list" class="admin-list"></div>
-            </div>
-
-            <!-- Panel Hobi -->
-            <div class="dash-card">
-                <h3>Daftar Hobi</h3>
-                <div class="form-section">
-                    <h4>Tambah Hobi Baru</h4>
-                    <input type="text" id="h-title" placeholder="Nama Hobi" class="form-input">
-                    <textarea id="h-desc" placeholder="Deskripsi Singkat" class="form-input"></textarea>
-                    <input type="text" id="h-icon" placeholder="Emoji Ikon (cth: 🏃‍♀️)" class="form-input">
-                    <p id="h-error" class="error-text">Semua kolom wajib diisi.</p>
-                    <div class="btn-group">
-                        <button id="btn-add-h" class="btn btn-primary" style="padding: 10px;">Simpan Hobi</button>
-                        <button id="btn-cancel-h" class="btn btn-secondary hidden" style="padding: 10px;">Batal</button>
-                    </div>
-                </div>
-                <div id="admin-hobbies-list" class="admin-list"></div>
             </div>
         </div>
-    </div>
 
     <script>
+        // Kamus Bahasa (Terjemahan)
+        const dict = {
+            id: {
+                navAbout: "Tentang", navPorto: "Portofolio", navHobby: "Hobi", navContact: "Kontak",
+                heroIm: "Saya", heroDesc: "Aku suka mencoba hal-hal yang baru. senang bertemu dengan anda!",
+                btnDiscuss: "Mari Berdiskusi", btnPorto: "Lihat Portofolio",
+                secPorto: "Portofolio", secPortoDesc: "Beberapa karya dan eksplorasi terbaru saya.",
+                secHobby: "Hobi & Minat", secHobbyDesc: "Aktivitas yang menginspirasi kreativitas saya sehari-hari.",
+                secContact: "Tertarik Bekerja Sama?", secContactDesc: "Jangan ragu untuk menyapa. Saya selalu terbuka untuk mendiskusikan proyek baru atau sekadar bertukar ide kreatif.",
+                btnMsg: "Kirim Pesan", viewProj: "Lihat Proyek"
+            },
+            en: {
+                navAbout: "About", navPorto: "Portfolio", navHobby: "Hobbies", navContact: "Contact",
+                heroIm: "I am", heroDesc: "I love trying out new things. Nice to meet you!",
+                btnDiscuss: "Let's Talk", btnPorto: "View Portfolio",
+                secPorto: "Portfolio", secPortoDesc: "Some of my recent works and explorations.",
+                secHobby: "Hobbies & Interests", secHobbyDesc: "Activities that inspire my daily creativity.",
+                secContact: "Interested in Collaborating?", secContactDesc: "Feel free to say hi. I'm always open to discussing new projects or sharing creative ideas.",
+                btnMsg: "Send Message", viewProj: "View Project"
+            }
+        };
+
         // Data Default (jika localStorage kosong)
         const defaultData = {
             projects: [
@@ -470,7 +654,8 @@
                 { id: '2', title: 'Membaca', desc: 'Menikmati buku-buku seputar pengembangan diri.', icon: '📚' },
                 { id: '3', title: 'Makan', desc: 'Mengeksplorasi berbagai hidangan dan rasa lezat.', icon: '🍽️' },
                 { id: '4', title: 'Fotografi', desc: 'Menangkap momen estetik kehidupan sehari-hari.', icon: '📸' }
-            ]
+            ],
+            settings: { theme: 'light', lang: 'id', name: 'Sandra Clarita' }
         };
 
         // State Global Aplikasi
@@ -479,7 +664,7 @@
         let editHobbyId = null;
 
         // Manajemen Local Storage (Pengganti Firebase)
-        const STORAGE_KEY = 'sandra_portfolio_data_v3';
+        const STORAGE_KEY = 'sandra_portfolio_data_v4';
         
         function loadData() {
             try {
@@ -490,21 +675,51 @@
                     // Mencegah error jika data di storage rusak/kosong
                     if (!state.projects) state.projects = defaultData.projects;
                     if (!state.hobbies) state.hobbies = defaultData.hobbies;
+                    if (!state.settings) state.settings = defaultData.settings;
                     
+                    applySettings();
                     renderUI(); // PERBAIKAN: Perintahkan browser untuk menampilkan data yang terbaca
                 } else {
                     state = JSON.parse(JSON.stringify(defaultData)); // Deep copy default
+                    applySettings();
                     saveData();
                 }
             } catch (error) {
                 // Jika terjadi error saat membaca data, kembalikan ke awal
                 state = JSON.parse(JSON.stringify(defaultData));
+                applySettings();
                 saveData();
             }
         }
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             renderUI(); // Render ulang setelah menyimpan
+        }
+
+        // Terapkan Konfigurasi Settings
+        function applySettings() {
+            // Theme Mode
+            document.documentElement.setAttribute('data-theme', state.settings.theme);
+            const themeToggle = document.getElementById('setting-theme-toggle');
+            if (themeToggle) themeToggle.checked = state.settings.theme === 'dark';
+
+            // Bahasa (Language)
+            const lang = state.settings.lang || 'id';
+            const langSelect = document.getElementById('setting-lang-select');
+            if (langSelect) langSelect.value = lang;
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[lang] && dict[lang][key]) {
+                    el.textContent = dict[lang][key];
+                }
+            });
+
+            // Nama Profil
+            const name = state.settings.name || 'Sandra Clarita';
+            document.querySelectorAll('.dynamic-name').forEach(el => el.textContent = name);
+            const nameInput = document.getElementById('setting-name-input');
+            if (nameInput) nameInput.value = name;
         }
 
         // Observer untuk Animasi Scroll
@@ -524,6 +739,7 @@
 
         // Fungsi Utama Render UI
         function renderUI() {
+            const lang = state.settings?.lang || 'id';
             // Render UI Portofolio
             const pCont = document.getElementById('projects-container');
             pCont.innerHTML = state.projects.map((p, i) => `
@@ -536,7 +752,7 @@
                         <h3>${p.title}</h3>
                         <p>${p.desc}</p>
                         <div class="project-link-btn">
-                            Lihat Proyek
+                            ${dict[lang].viewProj}
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
                     </div>
@@ -589,6 +805,8 @@
         // Admin Login Modal Logic
         const loginModal = document.getElementById('admin-login-modal');
         const dashModal = document.getElementById('admin-dashboard');
+        const adminSidebar = document.getElementById('admin-sidebar');
+        const adminBackdrop = document.getElementById('admin-backdrop');
         
         document.getElementById('open-login-btn').addEventListener('click', () => {
             loginModal.classList.add('active');
@@ -607,13 +825,56 @@
                 document.getElementById('admin-user').value = '';
                 document.getElementById('admin-pass').value = '';
                 document.getElementById('login-error').classList.remove('active');
-                document.body.style.overflow = 'hidden'; 
+                document.body.style.overflow = 'hidden'; // Kunci scroll halaman utama
             } else {
                 document.getElementById('login-error').classList.add('active');
             }
         });
-        document.getElementById('btn-logout').addEventListener('click', () => {
+
+        const toggleAdminMenu = () => {
+            const isOpen = adminSidebar.classList.contains('open');
+            if (isOpen) {
+                adminSidebar.classList.remove('open');
+                adminBackdrop.classList.remove('active');
+            } else {
+                adminSidebar.classList.add('open');
+                adminBackdrop.classList.add('active');
+            }
+        };
+        
+        document.getElementById('admin-menu-btn').addEventListener('click', toggleAdminMenu);
+        document.getElementById('admin-backdrop').addEventListener('click', toggleAdminMenu);
+        
+        // Tab navigasi di Admin
+        document.querySelectorAll('.admin-nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Tutup hamburger di HP jika sedang terbuka
+                if (window.innerWidth < 768) {
+                    toggleAdminMenu();
+                }
+                
+                // Reset semua tab
+                document.querySelectorAll('.admin-nav-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Aktifkan tab yang dipilih
+                link.classList.add('active');
+                const targetId = link.getAttribute('data-tab');
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) targetEl.classList.add('active');
+                
+                // Pindah ke paling atas content
+                document.getElementById('admin-content-area').scrollTo(0, 0);
+            });
+        });
+
+        // Event Listener untuk tombol X di topbar CMS
+        document.getElementById('btn-close-cms').addEventListener('click', () => {
             dashModal.classList.remove('active');
+            adminSidebar.classList.remove('open');
+            adminBackdrop.classList.remove('active');
             document.body.style.overflow = '';
         });
 
@@ -632,6 +893,26 @@
         }
         document.getElementById('btn-cancel-p').addEventListener('click', resetProjectForm);
         document.getElementById('btn-cancel-h').addEventListener('click', resetHobbyForm);
+
+        // Aksi Simpan Settings
+        document.getElementById('setting-theme-toggle').addEventListener('change', (e) => {
+            state.settings.theme = e.target.checked ? 'dark' : 'light';
+            applySettings();
+            saveData();
+        });
+
+        document.getElementById('btn-save-settings').addEventListener('click', () => {
+            state.settings.lang = document.getElementById('setting-lang-select').value;
+            state.settings.name = document.getElementById('setting-name-input').value.trim() || 'Sandra Clarita';
+            
+            applySettings();
+            saveData();
+            
+            // Munculkan notifikasi singkat
+            const msg = document.getElementById('settings-msg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+        });
 
         // Add/Update Portofolio
         document.getElementById('btn-add-p').addEventListener('click', () => {
@@ -713,7 +994,7 @@
                         document.getElementById('p-icon').value = item.icon || '';
                         document.getElementById('btn-add-p').textContent = 'Update Portofolio';
                         document.getElementById('btn-cancel-p').classList.remove('hidden');
-                        document.getElementById('admin-dashboard').scrollTo({ top: 0, behavior: 'smooth' });
+                        document.getElementById('admin-content-area').scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 });
             });
@@ -756,20 +1037,28 @@
                 else navbar.classList.remove('scrolled');
             });
 
-            // Mobile Menu Toggle
             const menuBtn = document.getElementById('menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
-            const menuIcon = document.getElementById('menu-icon');
+            const menuBackdrop = document.getElementById('menu-backdrop');
+            
             const toggleMenu = () => {
-                if (mobileMenu.classList.contains('open')) {
+                const isOpen = mobileMenu.classList.contains('open');
+                if (isOpen) {
                     mobileMenu.classList.remove('open');
-                    menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                    menuBtn.classList.remove('active');
+                    menuBackdrop.classList.remove('open');
+                    document.body.style.overflow = ''; // Mengembalikan scroll
                 } else {
                     mobileMenu.classList.add('open');
-                    menuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+                    menuBtn.classList.add('active');
+                    menuBackdrop.classList.add('open');
+                    document.body.style.overflow = 'hidden'; // Mengunci scroll background
                 }
             };
+            
             menuBtn.addEventListener('click', toggleMenu);
+            menuBackdrop.addEventListener('click', toggleMenu); // Tutup saat klik latar belakang
+            
             document.querySelectorAll('.mobile-link').forEach(link => {
                 link.addEventListener('click', () => { if(mobileMenu.classList.contains('open')) toggleMenu(); });
             });
