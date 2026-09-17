@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Personal | Pure HTML CSS JS</title>
+
+    <!-- Firebase SDK Import Map -->
+    <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+      }
+    }
+    </script>
     
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -619,7 +629,28 @@
             </div>
         </div>
 
-    <script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCV82mvCV27a8C2RicCOWiLpYvjUGyeEwY",
+          authDomain: "potofolio-sandra.firebaseapp.com",
+          projectId: "potofolio-sandra",
+          storageBucket: "potofolio-sandra.firebasestorage.app",
+          messagingSenderId: "227563813189",
+          appId: "1:227563813189:web:24a68eeac083e8a285662c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docRef = doc(db, 'portfolio', 'content');
+
         // Kamus Bahasa (Terjemahan)
         const dict = {
             id: {
@@ -642,7 +673,7 @@
             }
         };
 
-        // Data Default (jika localStorage kosong)
+        // Data Default (jika Firebase Firestore belum berisi data)
         const defaultData = {
             projects: [
                 { id: '1', title: 'Flevo', desc: 'Aplikasi untuk mencari dan memesan tiket berbagai acara di sekitar pengguna.', link: 'https://demo.example.com/flevo', icon: '📝', image: 'https://placehold.co/800x500/E3E8D8/5C664A?text=Flevo' },
@@ -659,41 +690,74 @@
         };
 
         // State Global Aplikasi
-        let state = { projects: [], hobbies: [] };
+        let state = { projects: [], hobbies: [], settings: { theme: 'light', lang: 'id', name: 'Sandra Clarita' } };
         let editProjectId = null;
         let editHobbyId = null;
 
-        // Manajemen Local Storage (Pengganti Firebase)
-        const STORAGE_KEY = 'sandra_portfolio_data_v4';
-        
+        // Manajemen Firebase Firestore
         function loadData() {
+            // Pasang data awal/default agar tampilan segera muncul
+            state = JSON.parse(JSON.stringify(defaultData));
+            applySettings();
+            renderUI();
+
             try {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    state = JSON.parse(stored);
-                    
-                    // Mencegah error jika data di storage rusak/kosong
-                    if (!state.projects) state.projects = defaultData.projects;
-                    if (!state.hobbies) state.hobbies = defaultData.hobbies;
-                    if (!state.settings) state.settings = defaultData.settings;
-                    
-                    applySettings();
-                    renderUI(); // PERBAIKAN: Perintahkan browser untuk menampilkan data yang terbaca
-                } else {
-                    state = JSON.parse(JSON.stringify(defaultData)); // Deep copy default
-                    applySettings();
-                    saveData();
-                }
+                // Sinkronisasi realtime menggunakan onSnapshot
+                onSnapshot(docRef, async (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        state.projects = Array.isArray(data.projects) ? data.projects : defaultData.projects;
+                        state.hobbies = Array.isArray(data.hobbies) ? data.hobbies : defaultData.hobbies;
+                        state.settings = data.settings || defaultData.settings;
+                        applySettings();
+                        renderUI();
+                    } else {
+                        // Jika dokumen di Firestore belum ada, coba migrasi dari data localStorage lama jika ada
+                        let initialData = defaultData;
+                        try {
+                            const local = localStorage.getItem('sandra_portfolio_data_v4');
+                            if (local) {
+                                const parsed = JSON.parse(local);
+                                if (parsed && parsed.projects) {
+                                    initialData = parsed;
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("Gagal membaca cadangan localStorage:", e);
+                        }
+
+                        state = JSON.parse(JSON.stringify(initialData));
+                        applySettings();
+                        renderUI();
+
+                        // Inisialisasi dokumen baru di Firestore
+                        try {
+                            const cleanState = JSON.parse(JSON.stringify(state));
+                            await setDoc(docRef, cleanState);
+                        } catch (err) {
+                            console.warn("Inisialisasi dokumen Firestore tertunda:", err);
+                        }
+                    }
+                }, (error) => {
+                    console.error("Firestore onSnapshot error:", error);
+                    // Jika permission belum terbuka atau mode offline, UI tetap berjalan dengan state lokal
+                    renderUI();
+                });
             } catch (error) {
-                // Jika terjadi error saat membaca data, kembalikan ke awal
-                state = JSON.parse(JSON.stringify(defaultData));
-                applySettings();
-                saveData();
+                console.error("Gagal menghubungkan ke Firestore:", error);
             }
         }
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            renderUI(); // Render ulang setelah menyimpan
+
+        async function saveData() {
+            try {
+                const cleanState = JSON.parse(JSON.stringify(state));
+                await setDoc(docRef, cleanState);
+                renderUI(); // Render ulang setelah menyimpan
+            } catch (error) {
+                console.error("Gagal menyimpan data ke Firestore:", error);
+                renderUI();
+                alert("Gagal menyimpan ke Firestore: " + error.message + "\n\nPastikan aturan keamanan (Security Rules) di Firebase Console sudah diatur (contoh: allow read, write: if true; untuk tahap pengetesan).");
+            }
         }
 
         // Terapkan Konfigurasi Settings
@@ -1015,60 +1079,67 @@
             });
         }
 
-        // On DOM Loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load Local Data
+        // Inisialisasi Aplikasi
+        function initApp() {
+            // Load Firestore Data
             loadData();
 
             // Sapaan Waktu Dinamis
             const hour = new Date().getHours();
             const greeting = document.getElementById('dynamic-greeting');
-            if (hour < 11) greeting.textContent = 'Selamat Pagi!';
-            else if (hour < 15) greeting.textContent = 'Selamat Siang!';
-            else if (hour < 19) greeting.textContent = 'Selamat Sore!';
-            else greeting.textContent = 'Selamat Malam!';
+            if (greeting) {
+                if (hour < 11) greeting.textContent = 'Selamat Pagi!';
+                else if (hour < 15) greeting.textContent = 'Selamat Siang!';
+                else if (hour < 19) greeting.textContent = 'Selamat Sore!';
+                else greeting.textContent = 'Selamat Malam!';
+            }
             
-            document.getElementById('year').textContent = new Date().getFullYear();
+            const yearEl = document.getElementById('year');
+            if (yearEl) yearEl.textContent = new Date().getFullYear();
 
             // Navbar Sticky Effect
             const navbar = document.getElementById('navbar');
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 20) navbar.classList.add('scrolled');
-                else navbar.classList.remove('scrolled');
-            });
+            if (navbar) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 20) navbar.classList.add('scrolled');
+                    else navbar.classList.remove('scrolled');
+                });
+            }
 
             const menuBtn = document.getElementById('menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const menuBackdrop = document.getElementById('menu-backdrop');
             
-            const toggleMenu = () => {
-                const isOpen = mobileMenu.classList.contains('open');
-                if (isOpen) {
-                    mobileMenu.classList.remove('open');
-                    menuBtn.classList.remove('active');
-                    menuBackdrop.classList.remove('open');
-                    document.body.style.overflow = ''; // Mengembalikan scroll
-                } else {
-                    mobileMenu.classList.add('open');
-                    menuBtn.classList.add('active');
-                    menuBackdrop.classList.add('open');
-                    document.body.style.overflow = 'hidden'; // Mengunci scroll background
-                }
-            };
-            
-            menuBtn.addEventListener('click', toggleMenu);
-            menuBackdrop.addEventListener('click', toggleMenu); // Tutup saat klik latar belakang
-            
-            document.querySelectorAll('.mobile-link').forEach(link => {
-                link.addEventListener('click', () => { if(mobileMenu.classList.contains('open')) toggleMenu(); });
-            });
+            if (menuBtn && mobileMenu && menuBackdrop) {
+                const toggleMenu = () => {
+                    const isOpen = mobileMenu.classList.contains('open');
+                    if (isOpen) {
+                        mobileMenu.classList.remove('open');
+                        menuBtn.classList.remove('active');
+                        menuBackdrop.classList.remove('open');
+                        document.body.style.overflow = ''; // Mengembalikan scroll
+                    } else {
+                        mobileMenu.classList.add('open');
+                        menuBtn.classList.add('active');
+                        menuBackdrop.classList.add('open');
+                        document.body.style.overflow = 'hidden'; // Mengunci scroll background
+                    }
+                };
+                
+                menuBtn.addEventListener('click', toggleMenu);
+                menuBackdrop.addEventListener('click', toggleMenu); // Tutup saat klik latar belakang
+                
+                document.querySelectorAll('.mobile-link').forEach(link => {
+                    link.addEventListener('click', () => { if(mobileMenu.classList.contains('open')) toggleMenu(); });
+                });
+            }
 
             // Elemen statis ke Intersection Observer
             document.querySelectorAll('.fade-in-up:not(.dynamic-fade)').forEach(el => observer.observe(el));
 
             // Cursor Pop Effect (mati jika CMS terbuka)
             document.addEventListener('click', function(e) {
-                if(dashModal.classList.contains('active')) return; 
+                if(dashModal && dashModal.classList.contains('active')) return; 
                 const pop = document.createElement('div');
                 pop.classList.add('cursor-pop');
                 pop.style.left = e.clientX + 'px';
@@ -1076,7 +1147,13 @@
                 document.body.appendChild(pop);
                 setTimeout(() => pop.remove(), 500);
             });
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
     </script>
 </body>
 </html>
